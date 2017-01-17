@@ -74,10 +74,15 @@ def view_add(model_name, details):
             + '\tmodel = {}'.format(model_name.title())+ '\n')
 
 
-# choice = ask_model_name()
-# detail_template_create(choice)
-# form_template_create(choice)
-# list_view_create(choice)
-# model_add(choice)
-#model_add(ask_model_name(), ask_model_fields())
-view_add(ask_model_name(), ask_views())
+model = ask_model_name()
+choices = ask_views()
+
+if 'DetailView' in choices:
+    detail_template_create(model)
+if 'CreateView' in choices:
+    form_template_create(model)
+if 'ListView' in choices:
+    list_view_create(model)
+
+model_add(model, ask_model_fields())
+view_add(model, choices)
