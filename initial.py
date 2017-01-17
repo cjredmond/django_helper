@@ -29,14 +29,38 @@ def list_view_create(model_name):
     path = 'dummy_templates/{}/'.format(model_name)
     filename = '{}_list.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
-        temp_file.write("<h2> {} list page".format(model_name) + "\n" +
+        temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
         "{% for object in object_list %}" + "\n" +
         "<a href='#'>" + "\n" + "{% endfor %}")
 
-choice = ask_model_name()
-detail_template_create(choice)
-form_template_create(choice)
-list_view_create(choice)
+def ask_model_fields():
+    fields = []
+    answer = input("write field names and types: ").replace(' ','')
+    chopped = answer.split(',')
+    nested = [i.split(':') for i in chopped]
 
-with open('dummy_models.py') as models_file:
-    pass
+    for item in nested:
+        if item[1] == 'string':
+            item[1] = 'models.CharField(max_length=200)'
+        elif item[1] == 'int':
+            item[1] = 'models.IntegerField()'
+        elif item[1] == 'boolean':
+            item[1] = 'models.BooleanField()'
+    return nested
+
+def model_add(model_name, details):
+    with open('dummy_models.py', 'a') as models_file:
+        models_file.write('class {}():'.format(model_name.title()) + '\n')
+        for field in details:
+            models_file.write('\t{} = {}\n'.format(field[0],field[1]))
+
+def view_add(model_name):
+    with open('dummy_views')
+
+# choice = ask_model_name()
+# detail_template_create(choice)
+# form_template_create(choice)
+# list_view_create(choice)
+# model_add(choice)
+
+#model_add(ask_model_name(), ask_model_fields())
