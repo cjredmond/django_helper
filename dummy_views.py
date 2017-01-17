@@ -3,4 +3,3 @@ class FirstView():
 
 class SecondView():
     pass
-    

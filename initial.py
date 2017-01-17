@@ -54,13 +54,30 @@ def model_add(model_name, details):
         for field in details:
             models_file.write('\t{} = {}\n'.format(field[0],field[1]))
 
-def view_add(model_name):
-    with open('dummy_views')
+def ask_views():
+    answer = []
+    detail = input('Do you want a detail view? Y/n :')
+    listv = input('Do you want a list view? Y/n :')
+    create_v = input('Do you want a create view? Y/n :')
+    if detail != "n":
+        answer.append('DetailView')
+    if listv != "n":
+        answer.append('ListView')
+    if create_v != "n":
+        answer.append('CreateView')
+    return answer
+
+def view_add(model_name, details):
+    with open('dummy_views.py', 'a') as views_file:
+        for view in details:
+            views_file.write('\nclass {}{}():'.format(model_name.title(), view) + '\n'
+            + '\tmodel = {}'.format(model_name.title())+ '\n')
+
 
 # choice = ask_model_name()
 # detail_template_create(choice)
 # form_template_create(choice)
 # list_view_create(choice)
 # model_add(choice)
-
 #model_add(ask_model_name(), ask_model_fields())
+view_add(ask_model_name(), ask_views())
