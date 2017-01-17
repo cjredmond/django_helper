@@ -1,4 +1,5 @@
 import os
+import fileinput
 
 def ask_model_name():
     model_name = input('Name of model?')
@@ -73,16 +74,53 @@ def view_add(model_name, details):
             views_file.write('\nclass {}{}():'.format(model_name.title(), view) + '\n'
             + '\tmodel = {}'.format(model_name.title())+ '\n')
 
+def total():
+    model = ask_model_name()
+    choices = ask_views()
+    if 'DetailView' in choices:
+        detail_template_create(model)
+    if 'CreateView' in choices:
+        form_template_create(model)
+    if 'ListView' in choices:
+        list_view_create(model)
+    model_add(model, ask_model_fields())
+    view_add(model, choices)
 
-model = ask_model_name()
-choices = ask_views()
+# for line in fileinput.input('dummy_urls.py', inplace=1):
+#     if line.startswith(']'):
+#         print('hi\n]')
+#     elif line.endswith(')'):
+#         print(line + ',')
+#     else:
+#         print(line)
 
-if 'DetailView' in choices:
-    detail_template_create(model)
-if 'CreateView' in choices:
-    form_template_create(model)
-if 'ListView' in choices:
-    list_view_create(model)
 
-model_add(model, ask_model_fields())
-view_add(model, choices)
+
+def detail_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)$', {}DetailView.as_view(), "{}_detail_view")
+            """.format(model_name,model_name.title(),model_name))
+    l = open('dummy_urls.py', 'w')
+    for line in lines:
+        l.write(line)
+
+detail_url_adder('post')
+
+# def list_url_adder(model_name):
+#     f = open('dummy_urls.py', 'r')
+#     lines = f.readlines()
+#     for line in lines:
+#         if line.endswith(')\n'):
+#             line = line.replace('\n', ',\n')
+#
+#     f = open('dummy_urls.py', 'w')
+#     for line in lines:
+#         if line.endswith(')\n'):
+#             pass
+#         f.write(line)
+# list_url_adder('post')
