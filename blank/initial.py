@@ -5,34 +5,38 @@ def ask_model_name():
     model_name = input('Name of model?')
     return model_name
 
-def detail_template_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+def ask_app_name():
+    app = input('Name of app? ')
+    return app
+
+def detail_template_create(model_name, app_name):
+    if not os.path.isdir('templates/{}/'.format(app_name)):
+        os.makedirs('templates/{}/'.format(app_name))
+    path = 'templates/{}/'.format(app_name)
     filename = '{}_detail.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write('<h2> {} detail page </h2>'.format(model_name))
 
 
-def form_template_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+def form_template_create(model_name, app_name):
+    if not os.path.isdir('templates/{}/'.format(app_name)):
+        os.makedirs('templates/{}/'.format(app_name))
+    path = 'templates/{}/'.format(app_name)
     filename = '{}_form.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> form page </h2>" + "\n" + '<form class="" method="post">'
         + "\n" + "{% csrf_token %}" + "\n" + "{{ form.as_p }}" + "\n" +
-        '<input type="submit" value="submit"' + "\n" + "</form>")
+        '<input type="submit" value="submit">' + "\n" + "</form>")
 
-def list_template_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+def list_template_create(model_name, app_name):
+    if not os.path.isdir('templates/{}/'.format(app_name)):
+        os.makedirs('templates/{}/'.format(app_name))
+    path = 'templates/{}/'.format(app_name)
     filename = '{}_list.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
         "{% for object in object_list %}" + "\n" +
-        "<a href='#'>" + "\n" + "{% endfor %}")
+        "<a href='#'>{{ object }}</a>" + "\n" + "{% endfor %}")
 
 def ask_model_fields():
     fields = []
@@ -99,14 +103,15 @@ def view_add(model_name, details, model_fields):
                 create_view_add(model_name, app_name, model_fields, view)
 
 def total():
+    app = ask_app_name()
     model = ask_model_name()
     choices = ask_views()
     if 'DetailView' in choices:
-        detail_template_create(model)
+        detail_template_create(model, app)
     if 'CreateView' in choices:
-        form_template_create(model)
+        form_template_create(model, app)
     if 'ListView' in choices:
-        list_template_create(model)
+        list_template_create(model, app)
     model_details = ask_model_fields()
     for_models = model_details[0]
     for_views = model_details[1]
