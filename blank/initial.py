@@ -73,32 +73,30 @@ def ask_views():
         answer.append('CreateView')
     return answer
 
-def generic_view_add(model_name, app_name):
+def generic_view_add(model_name, app_name, view):
     with open('{}/views.py'.format(app_name), 'a') as views_file:
-        for view in details:
-            views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
-            + '\tmodel = {}'.format(model_name.title())+ '\n')
+        views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
+        + '\tmodel = {}'.format(model_name.title())+ '\n')
 
-def create_view_add(model_name, app_name, model_fields, details):
+def create_view_add(model_name, app_name, model_fields, view):
     with open('{}/views.py'.format(app_name), 'a') as views_file:
-        for view in details:
-            views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
-            + '\tmodel = {}'.format(model_name.title())+ '\n'
-            + '\tfields = ({})'.format([str(x) for x in model_fields]) + '\n'
-            + '\tdef form_valid(self,form):' + '\n'
-            + '\t\tinstance = form.save(commit=False)' + '\n'
-            + '\t\treturn super().form_valid(form)' + '\n'
-            + '\tdef get_success_url(self):' + '\n'
-            + '\t\treturn "/"')
+        views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
+        + '\tmodel = {}'.format(model_name.title())+ '\n'
+        + '\tfields = ({})'.format([str(x) for x in model_fields]) + '\n'
+        + '\tdef form_valid(self,form):' + '\n'
+        + '\t\tinstance = form.save(commit=False)' + '\n'
+        + '\t\treturn super().form_valid(form)' + '\n'
+        + '\tdef get_success_url(self):' + '\n'
+        + '\t\treturn "/"')
 
 def view_add(model_name, details, model_fields):
     app_name = input('App name? ')
     with open('{}/views.py'.format(app_name), 'a') as views_file:
         for view in details:
             if view == 'DetailView' or view == 'ListView':
-                generic_view_add(model_name, app_name)
+                generic_view_add(model_name, app_name, view)
             else:
-                create_view_add(model_name, app_name, model_fields, details)
+                create_view_add(model_name, app_name, model_fields, view)
 
 def total():
     model = ask_model_name()
@@ -164,4 +162,4 @@ def list_url_adder(model_name, project):
     for line in lines:
         l.write(line)
 
-#total()
+total()
