@@ -9,6 +9,10 @@ def ask_app_name():
     app = input('Name of app? ')
     return app
 
+def project_name():
+    proj = input('Proj name? ')
+    return proj
+
 def detail_template_create(model_name, app_name):
     if not os.path.isdir('templates/{}/'.format(app_name)):
         os.makedirs('templates/{}/'.format(app_name))
@@ -57,8 +61,7 @@ def ask_model_fields():
 
 
 
-def model_add(model_name, details):
-    app_name = input('App name? ')
+def model_add(model_name, details, app_name):
     with open('{}/models.py'.format(app_name), 'a') as models_file:
         models_file.write('class {}(models.Model):'.format(model_name.title()) + '\n')
         for field in details:
@@ -93,39 +96,13 @@ def create_view_add(model_name, app_name, model_fields, view):
         + '\tdef get_success_url(self):' + '\n'
         + '\t\treturn "/"')
 
-def view_add(model_name, details, model_fields):
-    app_name = input('App name? ')
+def view_add(model_name, details, model_fields, app_name):
     with open('{}/views.py'.format(app_name), 'a') as views_file:
         for view in details:
             if view == 'DetailView' or view == 'ListView':
                 generic_view_add(model_name, app_name, view)
             else:
                 create_view_add(model_name, app_name, model_fields, view)
-
-def total():
-    app = ask_app_name()
-    model = ask_model_name()
-    choices = ask_views()
-    if 'DetailView' in choices:
-        detail_template_create(model, app)
-    if 'CreateView' in choices:
-        form_template_create(model, app)
-    if 'ListView' in choices:
-        list_template_create(model, app)
-    model_details = ask_model_fields()
-    for_models = model_details[0]
-    for_views = model_details[1]
-    model_add(model, for_models)
-    view_add(model, choices, for_views)
-    proj = project_name()
-    detail_url_adder(model, proj)
-    create_url_adder(model, proj)
-    list_url_adder(model, proj)
-
-
-def project_name():
-    proj = input('Proj name? ')
-    return proj
 
 def detail_url_adder(model_name, project):
     f = open('{}/urls.py'.format(project), 'r')
@@ -166,5 +143,25 @@ def list_url_adder(model_name, project):
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
         l.write(line)
+
+def total():
+    app = ask_app_name()
+    model = ask_model_name()
+    choices = ask_views()
+    if 'DetailView' in choices:
+        detail_template_create(model, app)
+    if 'CreateView' in choices:
+        form_template_create(model, app)
+    if 'ListView' in choices:
+        list_template_create(model, app)
+    model_details = ask_model_fields()
+    for_models = model_details[0]
+    for_views = model_details[1]
+    model_add(model, for_models, app)
+    view_add(model, choices, for_views, app)
+    proj = project_name()
+    detail_url_adder(model, proj)
+    create_url_adder(model, proj)
+    list_url_adder(model, proj)
 
 total()
