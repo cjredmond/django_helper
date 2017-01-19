@@ -6,18 +6,18 @@ def ask_model_name():
     return model_name
 
 def detail_template_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+    if not os.path.isdir('dummy_templates/{}/'.format(model_name)):
+        os.makedirs('dummy_templates/{}/'.format(model_name))
+    path = 'dummy_templates/{}/'.format(model_name)
     filename = '{}_detail.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write('<h2> {} detail page </h2>'.format(model_name))
 
 
 def form_template_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+    if not os.path.isdir('dummy_templates/{}/'.format(model_name)):
+        os.makedirs('dummy_templates/{}/'.format(model_name))
+    path = 'dummy_templates/{}/'.format(model_name)
     filename = '{}_form.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> form page </h2>" + "\n" + '<form class="" method="post">'
@@ -25,9 +25,9 @@ def form_template_create(model_name):
         '<input type="submit" value="submit"' + "\n" + "</form>")
 
 def list_view_create(model_name):
-    if not os.path.isdir('templates/{}/'.format(model_name)):
-        os.makedirs('templates/{}/'.format(model_name))
-    path = 'templates/{}/'.format(model_name)
+    if not os.path.isdir('dummy_templates/{}/'.format(model_name)):
+        os.makedirs('dummy_templates/{}/'.format(model_name))
+    path = 'dummy_templates/{}/'.format(model_name)
     filename = '{}_list.html'.format(model_name)
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
@@ -50,8 +50,7 @@ def ask_model_fields():
     return nested
 
 def model_add(model_name, details):
-    app_name = input('App name? ')
-    with open('{}/models.py'.format(app_name), 'a') as models_file:
+    with open('dummy_models.py', 'a') as models_file:
         models_file.write('class {}():'.format(model_name.title()) + '\n')
         for field in details:
             models_file.write('\t{} = {}\n'.format(field[0],field[1]))
@@ -70,8 +69,7 @@ def ask_views():
     return answer
 
 def view_add(model_name, details):
-    app_name = input('App name? ')
-    with open('{}/views.py'.format(app_name), 'a') as views_file:
+    with open('dummy_views.py', 'a') as views_file:
         for view in details:
             views_file.write('\nclass {}{}():'.format(model_name.title(), view) + '\n'
             + '\tmodel = {}'.format(model_name.title())+ '\n')
@@ -87,11 +85,6 @@ def total():
         list_view_create(model)
     model_add(model, ask_model_fields())
     view_add(model, choices)
-    proj = project_name()
-    detail_url_adder(model, proj)
-    create_url_adder(model, proj)
-    list_url_adder(model, proj)
-
 
 # for line in fileinput.input('dummy_urls.py', inplace=1):
 #     if line.startswith(']'):
@@ -101,12 +94,10 @@ def total():
 #     else:
 #         print(line)
 
-def project_name():
-    proj = input('Proj name? ')
-    return proj
 
-def detail_url_adder(model_name, project):
-    f = open('{}/urls.py'.format(project), 'r')
+
+def detail_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
     lines = f.readlines()
     for i in range(len(lines)):
         if lines[i].endswith(')\n'):
@@ -114,13 +105,13 @@ def detail_url_adder(model_name, project):
         if lines[i].endswith(']\n'):
             lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)$', {}DetailView.as_view(), "{}_detail_view")
             """.format(model_name,model_name.title(),model_name))
-    l = open('{}/urls.py'.format(project), 'w')
+    l = open('dummy_urls.py', 'w')
     for line in lines:
         l.write(line)
 
 
-def create_url_adder(model_name, project):
-    f = open('{}/urls.py'.format(project), 'r')
+def create_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
     lines = f.readlines()
     for i in range(len(lines)):
         if lines[i].endswith(')\n'):
@@ -128,12 +119,12 @@ def create_url_adder(model_name, project):
         if lines[i].endswith(']\n'):
             lines.insert(i,"""\turl(r'^{}/new/$', {}CreateView.as_view(), "{}_create_view")
             """.format(model_name,model_name.title(),model_name))
-    l = open('{}/urls.py'.format(project), 'w')
+    l = open('dummy_urls.py', 'w')
     for line in lines:
         l.write(line)
 
-def list_url_adder(model_name, project):
-    f = open('{}/urls.py'.format(project), 'r')
+def list_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
     lines = f.readlines()
     for i in range(len(lines)):
         if lines[i].endswith(')\n'):
@@ -141,8 +132,6 @@ def list_url_adder(model_name, project):
         if lines[i].endswith(']\n'):
             lines.insert(i,"""\turl(r'^{}s/$', {}ListView.as_view(), "{}_list_view")
             """.format(model_name,model_name.title(),model_name))
-    l = open('{}/urls.py'.format(project), 'w')
+    l = open('dummy_urls.py', 'w')
     for line in lines:
         l.write(line)
-
-total()
