@@ -1,5 +1,5 @@
-class FirstView():
+class FirstView(TemplateView):
     pass
 
-class SecondView():
+class SecondView(TemplateView):
     pass

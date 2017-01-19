@@ -109,18 +109,29 @@ def detail_url_adder(model_name):
     for line in lines:
         l.write(line)
 
-detail_url_adder('post')
 
-# def list_url_adder(model_name):
-#     f = open('dummy_urls.py', 'r')
-#     lines = f.readlines()
-#     for line in lines:
-#         if line.endswith(')\n'):
-#             line = line.replace('\n', ',\n')
-#
-#     f = open('dummy_urls.py', 'w')
-#     for line in lines:
-#         if line.endswith(')\n'):
-#             pass
-#         f.write(line)
-# list_url_adder('post')
+def create_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}/new/$', {}CreateView.as_view(), "{}_create_view")
+            """.format(model_name,model_name.title(),model_name))
+    l = open('dummy_urls.py', 'w')
+    for line in lines:
+        l.write(line)
+
+def list_url_adder(model_name):
+    f = open('dummy_urls.py', 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}s/$', {}ListView.as_view(), "{}_list_view")
+            """.format(model_name,model_name.title(),model_name))
+    l = open('dummy_urls.py', 'w')
+    for line in lines:
+        l.write(line)
