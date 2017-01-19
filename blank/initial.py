@@ -24,7 +24,7 @@ def form_template_create(model_name):
         + "\n" + "{% csrf_token %}" + "\n" + "{{ form.as_p }}" + "\n" +
         '<input type="submit" value="submit"' + "\n" + "</form>")
 
-def list_view_create(model_name):
+def list_template_create(model_name):
     if not os.path.isdir('templates/{}/'.format(model_name)):
         os.makedirs('templates/{}/'.format(model_name))
     path = 'templates/{}/'.format(model_name)
@@ -40,19 +40,23 @@ def ask_model_fields():
     chopped = answer.split(',')
     nested = [i.split(':') for i in chopped]
 
+
     for item in nested:
+        fields.append(item[0])
         if item[1] == 'string':
             item[1] = 'models.CharField(max_length=200)'
         elif item[1] == 'int':
             item[1] = 'models.IntegerField()'
         elif item[1] == 'boolean':
             item[1] = 'models.BooleanField()'
-    return nested
+    return nested, fields
+
+
 
 def model_add(model_name, details):
     app_name = input('App name? ')
     with open('{}/models.py'.format(app_name), 'a') as models_file:
-        models_file.write('class {}():'.format(model_name.title()) + '\n')
+        models_file.write('class {}(models.Model):'.format(model_name.title()) + '\n')
         for field in details:
             models_file.write('\t{} = {}\n'.format(field[0],field[1]))
 
@@ -69,12 +73,32 @@ def ask_views():
         answer.append('CreateView')
     return answer
 
-def view_add(model_name, details):
+def generic_view_add(model_name, app_name):
+    with open('{}/views.py'.format(app_name), 'a') as views_file:
+        for view in details:
+            views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
+            + '\tmodel = {}'.format(model_name.title())+ '\n')
+
+def create_view_add(model_name, app_name, model_fields, details):
+    with open('{}/views.py'.format(app_name), 'a') as views_file:
+        for view in details:
+            views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
+            + '\tmodel = {}'.format(model_name.title())+ '\n'
+            + '\tfields = ({})'.format([str(x) for x in model_fields]) + '\n'
+            + '\tdef form_valid(self,form):' + '\n'
+            + '\t\tinstance = form.save(commit=False)' + '\n'
+            + '\t\treturn super().form_valid(form)' + '\n'
+            + '\tdef get_success_url(self):' + '\n'
+            + '\t\treturn "/"')
+
+def view_add(model_name, details, model_fields):
     app_name = input('App name? ')
     with open('{}/views.py'.format(app_name), 'a') as views_file:
         for view in details:
-            views_file.write('\nclass {}{}():'.format(model_name.title(), view) + '\n'
-            + '\tmodel = {}'.format(model_name.title())+ '\n')
+            if view == 'DetailView' or view == 'ListView':
+                generic_view_add(model_name, app_name)
+            else:
+                create_view_add(model_name, app_name, model_fields, details)
 
 def total():
     model = ask_model_name()
@@ -84,22 +108,17 @@ def total():
     if 'CreateView' in choices:
         form_template_create(model)
     if 'ListView' in choices:
-        list_view_create(model)
-    model_add(model, ask_model_fields())
-    view_add(model, choices)
+        list_template_create(model)
+    model_details = ask_model_fields()
+    for_models = model_details[0]
+    for_views = model_details[1]
+    model_add(model, for_models)
+    view_add(model, choices, for_views)
     proj = project_name()
     detail_url_adder(model, proj)
     create_url_adder(model, proj)
     list_url_adder(model, proj)
 
-
-# for line in fileinput.input('dummy_urls.py', inplace=1):
-#     if line.startswith(']'):
-#         print('hi\n]')
-#     elif line.endswith(')'):
-#         print(line + ',')
-#     else:
-#         print(line)
 
 def project_name():
     proj = input('Proj name? ')
@@ -112,7 +131,7 @@ def detail_url_adder(model_name, project):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)$', {}DetailView.as_view(), "{}_detail_view")
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)$', {}DetailView.as_view(), name="{}_detail_view")
             """.format(model_name,model_name.title(),model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
@@ -126,7 +145,7 @@ def create_url_adder(model_name, project):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}/new/$', {}CreateView.as_view(), "{}_create_view")
+            lines.insert(i,"""\turl(r'^{}/new/$', {}CreateView.as_view(), name="{}_create_view")
             """.format(model_name,model_name.title(),model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
@@ -139,10 +158,10 @@ def list_url_adder(model_name, project):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}s/$', {}ListView.as_view(), "{}_list_view")
+            lines.insert(i,"""\turl(r'^{}s/$', {}ListView.as_view(), name="{}_list_view")
             """.format(model_name,model_name.title(),model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
         l.write(line)
 
-total()
+#total()
