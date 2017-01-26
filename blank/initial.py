@@ -72,12 +72,15 @@ def ask_views():
     detail = input('Do you want a detail view? Y/n :')
     listv = input('Do you want a list view? Y/n :')
     create_v = input('Do you want a create view? Y/n :')
+    update_v = input('Do you want an update view? Y/n :')
     if detail != "n":
         answer.append('DetailView')
     if listv != "n":
         answer.append('ListView')
     if create_v != "n":
         answer.append('CreateView')
+    if update_v != "n":
+        answer.append('UpdateView')
     return answer
 
 def generic_view_add(model_name, app_name, view):
@@ -94,15 +97,25 @@ def create_view_add(model_name, app_name, model_fields, view):
         + '\t\tinstance = form.save(commit=False)' + '\n'
         + '\t\treturn super().form_valid(form)' + '\n'
         + '\tdef get_success_url(self):' + '\n'
-        + '\t\treturn "/"')
+        + '\t\treturn "/" \n')
+
+def update_view_add(model_name, app_name, model_fields, view):
+    with open('{}/views.py'.format(app_name), 'a') as views_file:
+        views_file.write('\nclass {}{}({}):'.format(model_name.title(), view, view) + '\n'
+        + '\tmodel = {}'.format(model_name.title())+ '\n'
+        + '\tfields = ({})'.format([str(x) for x in model_fields]) + '\n'
+        + '\tsuccess_url = "/"' + '\n')
+
 
 def view_add(model_name, details, model_fields, app_name):
     with open('{}/views.py'.format(app_name), 'a') as views_file:
         for view in details:
             if view == 'DetailView' or view == 'ListView':
                 generic_view_add(model_name, app_name, view)
-            else:
+            elif view == 'CreateView':
                 create_view_add(model_name, app_name, model_fields, view)
+            else:
+                update_view_add(model_name, app_name, model_fields, view)
 
 def detail_url_adder(model_name, project):
     f = open('{}/urls.py'.format(project), 'r')
@@ -144,24 +157,40 @@ def list_url_adder(model_name, project):
     for line in lines:
         l.write(line)
 
+def update_url_adder(model_name, project):
+    f = open('{}/urls.py'.format(project), 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/update/$', {}UpdateView.as_view(), name="{}_update_view")
+            """.format(model_name,model_name.title(),model_name))
+    l = open('{}/urls.py'.format(project), 'w')
+    for line in lines:
+        l.write(line)
+
 def total():
     app = ask_app_name()
     model = ask_model_name()
     choices = ask_views()
+    proj = project_name()
     if 'DetailView' in choices:
         detail_template_create(model, app)
+        detail_url_adder(model, proj)
     if 'CreateView' in choices:
         form_template_create(model, app)
+        create_url_adder(model, proj)
     if 'ListView' in choices:
         list_template_create(model, app)
+        list_url_adder(model, proj)
+    if 'UpdateView' in choices:
+        update_url_adder(model, proj)
     model_details = ask_model_fields()
     for_models = model_details[0]
     for_views = model_details[1]
     model_add(model, for_models, app)
     view_add(model, choices, for_views, app)
-    proj = project_name()
-    detail_url_adder(model, proj)
-    create_url_adder(model, proj)
-    list_url_adder(model, proj)
+
 
 total()
