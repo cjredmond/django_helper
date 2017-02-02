@@ -1,4 +1,4 @@
-import os
+proimport os
 import fileinput
 
 def ask_model_name():

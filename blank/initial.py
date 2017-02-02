@@ -40,7 +40,7 @@ def list_template_create(model_name, app_name):
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
         "{% for object in object_list %}" + "\n" +
-        "<a href='#'>{{ object }}</a>" + "\n" + "{% endfor %}")
+        "<a href='{}_detail_view' object.id>{{ object }}</a>".format(model_name) + "\n" + "{% endfor %}")
 
 def ask_model_fields():
     fields = []
@@ -57,13 +57,16 @@ def ask_model_fields():
             item[1] = 'models.IntegerField()'
         elif item[1] == 'boolean':
             item[1] = 'models.BooleanField()'
+        elif item[1] == 'fk':
+            ref = input('What model do you want {} to refer to? '.format(item[0]))
+            item[1] = 'models.ForeignKeyField({})'.format(ref)
     return nested, fields
 
 
 
 def model_add(model_name, details, app_name):
     with open('{}/models.py'.format(app_name), 'a') as models_file:
-        models_file.write('class {}(models.Model):'.format(model_name.title()) + '\n')
+        models_file.write('\nclass {}(models.Model):'.format(model_name.title()) + '\n')
         for field in details:
             models_file.write('\t{} = {}\n'.format(field[0],field[1]))
 
@@ -170,11 +173,16 @@ def update_url_adder(model_name, project):
     for line in lines:
         l.write(line)
 
+def admin_register(model_name, app):
+    with open('{}/admin.py'.format(app), "a") as infile:
+        infile.write('\nadmin.site.register({})'.format(model_name.title()))
+
 def total():
     app = ask_app_name()
     model = ask_model_name()
-    choices = ask_views()
+    admin_register(model, app)
     proj = project_name()
+    choices = ask_views()
     if 'DetailView' in choices:
         detail_template_create(model, app)
         detail_url_adder(model, proj)
@@ -193,4 +201,4 @@ def total():
     view_add(model, choices, for_views, app)
 
 
-total()
+#total()
