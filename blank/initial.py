@@ -173,6 +173,40 @@ def update_url_adder(model_name, project):
     for line in lines:
         l.write(line)
 
+def nested_create_url_adder(model_name, project):
+    relation = input('What model does this depend on? ')
+    f = open('{}/urls.py'.format(project), 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/$', {}CreateView.as_view(), name="{}_create_view")
+            """.format(relation, model_name,model_name.title(),model_name))
+    l = open('{}/urls.py'.format(project), 'w')
+    for line in lines:
+        l.write(line)
+
+def nested_detail_url_adder(model_name, project):
+    relation = input('What model does this depend on? ')
+    f = open('{}/urls.py'.format(project), 'r')
+    lines = f.readlines()
+    for i in range(len(lines)):
+        if lines[i].endswith(')\n'):
+            lines[i] = lines[i].replace('\n', ',\n')
+        if lines[i].endswith(']\n'):
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}$', {}DetailView.as_view(), name="{}_detail_view")
+            """.format(relation, model_name, model_name.title(), model_name))
+    l = open('{}/urls.py'.format(project), 'w')
+    for line in lines:
+        l.write(line)
+
+def does_this_depend(model_name):
+    a = input("Does {} model url's depend on another class? Y/n ")
+    if a == "y" or a == "Y":
+        return True
+    return False
+
 def admin_register(model_name, app):
     with open('{}/admin.py'.format(app), "a") as infile:
         infile.write('\nadmin.site.register({})'.format(model_name.title()))
@@ -183,12 +217,19 @@ def total():
     admin_register(model, app)
     proj = project_name()
     choices = ask_views()
+    nested = does_this_depend(model)
     if 'DetailView' in choices:
         detail_template_create(model, app)
-        detail_url_adder(model, proj)
+        if nested:
+            nested_detail_url_adder(model, proj)
+        else:
+            detail_url_adder(model, proj)
     if 'CreateView' in choices:
         form_template_create(model, app)
-        create_url_adder(model, proj)
+        if nested:
+            nested_create_url_adder(model, proj)
+        else:
+            create_url_adder(model, proj)
     if 'ListView' in choices:
         list_template_create(model, app)
         list_url_adder(model, proj)
@@ -201,4 +242,4 @@ def total():
     view_add(model, choices, for_views, app)
 
 
-#total()
+total()
