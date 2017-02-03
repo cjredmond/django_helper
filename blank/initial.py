@@ -173,39 +173,41 @@ def update_url_adder(model_name, project):
     for line in lines:
         l.write(line)
 
-def nested_create_url_adder(model_name, project):
-    relation = input('What model does this depend on? ')
+def nested_create_url_adder(model_name, project, relation):
     f = open('{}/urls.py'.format(project), 'r')
     lines = f.readlines()
     for i in range(len(lines)):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/$', {}CreateView.as_view(), name="{}_create_view")
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/new/$', {}CreateView.as_view(), name="{}_create_view")
             """.format(relation, model_name,model_name.title(),model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
         l.write(line)
 
-def nested_detail_url_adder(model_name, project):
-    relation = input('What model does this depend on? ')
+def nested_detail_url_adder(model_name, project, relation):
     f = open('{}/urls.py'.format(project), 'r')
     lines = f.readlines()
     for i in range(len(lines)):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}$', {}DetailView.as_view(), name="{}_detail_view")
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/$', {}DetailView.as_view(), name="{}_detail_view")
             """.format(relation, model_name, model_name.title(), model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
         l.write(line)
 
 def does_this_depend(model_name):
-    a = input("Does {} model url's depend on another class? Y/n ")
+    a = input("Does {} model url's depend on another class? Y/n ".format(model_name))
     if a == "y" or a == "Y":
-        return True
+        return ask_dependent(model_name)
     return False
+
+def ask_dependent(model_name):
+    a = input("What model does {} depend on? ".format(model_name))
+    return a
 
 def admin_register(model_name, app):
     with open('{}/admin.py'.format(app), "a") as infile:
@@ -221,13 +223,13 @@ def total():
     if 'DetailView' in choices:
         detail_template_create(model, app)
         if nested:
-            nested_detail_url_adder(model, proj)
+            nested_detail_url_adder(model, proj, nested)
         else:
             detail_url_adder(model, proj)
     if 'CreateView' in choices:
         form_template_create(model, app)
         if nested:
-            nested_create_url_adder(model, proj)
+            nested_create_url_adder(model, proj, nested)
         else:
             create_url_adder(model, proj)
     if 'ListView' in choices:
