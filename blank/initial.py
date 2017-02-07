@@ -2,7 +2,7 @@ import os
 import fileinput
 
 def ask_model_name():
-    model_name = input('Name of model?')
+    model_name = input('Name of model? ')
     return model_name
 
 def ask_app_name():
@@ -40,7 +40,7 @@ def list_template_create(model_name, app_name):
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
         "{% for object in object_list %}" + "\n" +
-        """ <a href="{% '{}_detail_view' object.id %}">{{ object }}</a> """.format(model_name)+ "\n" + "{% endfor %}")
+        '<a href="#">{{ object }}</a>'+ "\n" + "{% endfor %}")
 def ask_model_fields():
     fields = []
     answer = input("write field names and types: ").replace(' ','')
@@ -58,7 +58,7 @@ def ask_model_fields():
             item[1] = 'models.BooleanField()'
         elif item[1] == 'fk':
             ref = input('What model do you want {} to refer to? '.format(item[0]))
-            item[1] = 'models.ForeignKeyField({})'.format(ref)
+            item[1] = 'models.ForeignKeyField({})'.format(ref.title())
     return nested, fields
 
 
@@ -192,8 +192,8 @@ def nested_detail_url_adder(model_name, project, relation):
         if lines[i].endswith(')\n'):
             lines[i] = lines[i].replace('\n', ',\n')
         if lines[i].endswith(']\n'):
-            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/$', {}DetailView.as_view(), name="{}_detail_view")
-            """.format(relation, model_name, model_name.title(), model_name))
+            lines.insert(i,"""\turl(r'^{}/(?P<pk>\d+)/{}/(?P<pk>\d+)/$', {}DetailView.as_view(), name="{}_detail_view")
+            """.format(relation.lower(), model_name.lower(), model_name.title(), model_name))
     l = open('{}/urls.py'.format(project), 'w')
     for line in lines:
         l.write(line)
@@ -213,10 +213,10 @@ def admin_register(model_name, app):
         infile.write('\nadmin.site.register({})'.format(model_name.title()))
 
 def total():
+    proj = project_name()
     app = ask_app_name()
     model = ask_model_name()
     admin_register(model, app)
-    proj = project_name()
     choices = ask_views()
     nested = does_this_depend(model)
     if 'DetailView' in choices:
