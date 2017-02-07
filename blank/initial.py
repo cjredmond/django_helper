@@ -40,8 +40,7 @@ def list_template_create(model_name, app_name):
     with open(os.path.join(path, filename), 'w') as temp_file:
         temp_file.write("<h2> {} list page <h2>".format(model_name) + "\n" +
         "{% for object in object_list %}" + "\n" +
-        "<a href='{}_detail_view' object.id>{{ object }}</a>".format(model_name) + "\n" + "{% endfor %}")
-
+        """ <a href="{% '{}_detail_view' object.id %}">{{ object }}</a> """.format(model_name)+ "\n" + "{% endfor %}")
 def ask_model_fields():
     fields = []
     answer = input("write field names and types: ").replace(' ','')
